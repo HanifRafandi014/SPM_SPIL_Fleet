@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="https://spil.co.id/img/spil_logo.581f4306.svg" type="image/x-icon">
+    <title>MT</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.2.0/css/adminlte.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.24/css/dataTables.bootstrap4.min.css">
+    <!-- Add Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* Dropdown Content (Hidden by Default) */
+        #vesselDropdown {
+            display: none;
+            position: absolute;
+            background-color: #f6f6f6;
+            min-width: 230px;
+            border: 1px solid #ddd;
+            z-index: 1;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        /* Links inside the dropdown */
+        #vesselDropdown a {
+            color: black;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+        }
+
+        /* Change color of dropdown links on hover */
+        #vesselDropdown a:hover {
+            background-color: #f1f1f1;
+        }
+
+        .nav-link.active {
+            background-color: red !important;
+            color: white !important; /* Agar teks tetap terlihat jelas */
+        }
+    </style>
+</head>
+<body class="hold-transition sidebar-mini layout-fixed">
+    <div class="wrapper">
+        <!-- Navbar -->
+        <nav class="main-header navbar navbar-expand navbar-white navbar-light" style="background-color: rgb(202, 8, 8); position: fixed; top: 0; width: 100%; z-index: 1030;">
+            <!-- Left navbar links -->
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars" style="color: white"></i></a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Sidebar Container -->
+        <aside class="main-sidebar sidebar-dark-primary elevation-4">
+            <!-- Brand Logo -->
+            <a class="brand-link" style="background-color: rgb(202, 8, 8); color: white;">
+                <img src="https://www.spil.co.id/img/spil_logo.581f4306.svg" alt="logo-spil"
+                    class="brand-image img-circle" style="padding-left: 0; margin-left: 10px;">
+                <span class="font-weight-bold" style="margin-left: 16px; color: white;">SPIL</span>|Fleet
+            </a>
+
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <!-- Sidebar Menu -->
+                <nav class="mt-2">
+                    <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+                        <!-- Dashboard -->
+                        <li class="nav-item">
+                            <a href="{{ url_for('dashboard') }}" class="nav-link {% if request.path == url_for('dashboard') %}active{% endif %}">
+                                <i class="fas fa-ship"></i>
+                                <p>Dashboard</p>
+                            </a>
+                        </li>
+                        <!-- Dropdown for Container -->
+                        <li class="nav-item has-treeview {% if request.path in [url_for('container_deck'), url_for('container_engine'), url_for('manalagi_deck'), url_for('manalagi_engine'), url_for('bc'), url_for('mt'), url_for('tk'), url_for('tb'), url_for('other')] %}menu-open{% endif %}">
+                            <a href="#" class="nav-link">
+                                <i class="fas fa-ship"></i>
+                                <p>
+                                    Search
+                                    <i class="right fas fa-angle-left"></i>
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview">
+                                <!-- Container-Deck -->
+                                <li class="nav-item">
+                                    <a href="{{ url_for('container_deck') }}" class="nav-link {% if request.path == url_for('container_deck') %}active{% endif %}">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>On Duty</p>
+                                    </a>
+                                </li>
+                                
+                                <!-- Other -->
+                                <li class="nav-item">
+                                    <a href="{{ url_for('other') }}" class="nav-link {% if request.path == url_for('other') %}active{% endif %}">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Off Duty</p>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+
+                        <!-- Dropdown for Container -->
+                        <li class="nav-item has-treeview {% if request.path in [url_for('container_rotation'), url_for('manalagi_rotation')] %}menu-open{% endif %}">
+                            <a href="#" class="nav-link">
+                                <i class="fas fa-ship"></i>
+                                <p>
+                                    Rotation
+                                    <i class="right fas fa-angle-left"></i>
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview">
+                                <!-- Container-Deck -->
+                                <li class="nav-item">
+                                    <a href="{{ url_for('container_rotation') }}" class="nav-link {% if request.path == url_for('container_rotation') %}active{% endif %}">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>container rotation</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="{{ url_for('manalagi_rotation') }}" class="nav-link {% if request.path == url_for('manalagi_rotation') %}active{% endif %}">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>manalagi rotation</p>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </aside>
+
+        <!-- Content Wrapper. Contains page content -->
+        <div class="content-wrapper">
+            <!-- Content Header (Page header) -->
+            <div class="content-header">
+                <div class="container-fluid">
+                    <h1 class="m-0">Ship Personnel Management</h1>
+                </div>
+            </div>
+
+            <!-- Main content -->
+            <section class="content">
+                <ul class="nav nav-tabs" id="positionTab" role="tablist">
+                    <!-- Tab for Nahkoda -->
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.path == url_for('container_deck') %}active{% endif %}" 
+                        href="{{ url_for('container_deck') }}" role="tab">
+                            Container Deck
+                        </a>
+                    </li>
+                    <!-- Tab for KKM -->
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.path == url_for('container_engine') %}active{% endif %}" 
+                        href="{{ url_for('container_engine') }}" role="tab">
+                        Container Engine
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.path == url_for('manalagi_deck') %}active{% endif %}" 
+                        href="{{ url_for('manalagi_deck') }}" role="tab">
+                        Manalagi Deck
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.path == url_for('manalagi_engine') %}active{% endif %}" 
+                        href="{{ url_for('manalagi_engine') }}" role="tab">
+                        Manalagi Engine
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.path == url_for('bc') %}active{% endif %}" 
+                        href="{{ url_for('bc') }}" role="tab">
+                        BC
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.path == url_for('mt') %}active{% endif %}" 
+                        href="{{ url_for('mt') }}" role="tab">
+                        MT
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.path == url_for('tb') %}active{% endif %}" 
+                        href="{{ url_for('tb') }}" role="tab">
+                        TB
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.path == url_for('tk') %}active{% endif %}" 
+                        href="{{ url_for('tk') }}" role="tab">
+                        TK
+                        </a>
+                    </li>
+                </ul>
+                
+                <div class="container-fluid">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Search for Crew Candidate</h3>
+                        </div>
+                        <div class="card-body">
+                            <form id="search-form">
+                                <!-- Hidden input to hold the current sheet name -->
+                                <input type="hidden" id="sheet-name" name="sheet_name">
+                                
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label for="bagian-input">Bagian</label>
+                                            <select class="form-control" id="bagian-input" required disabled>
+                                                <option value="MT" selected>MT</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label for="age-input">Age Min</label>
+                                            <input type="number" class="form-control" id="age-input" min="16" max="85" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label for="age-input2">Age Max</label>
+                                            <input type="number" class="form-control" id="age-input2" min="16" max="85" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label for="certif-input">Certificate</label>
+                                            <select class="form-control" id="certif-input" required>
+                                                <option value="" selected disabled>Select Option</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label for="rank-input">Rank</label>
+                                            <select class="form-control" id="rank-input" required>
+                                                <option value="" selected disabled>Select Option</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label for="vessel-input">Vessel</label>
+                                            <select class="form-control" id="vessel-input" required>
+                                                <option value="" selected disabled>Select Vessel</option>
+                                                <!-- Opsi vessel akan diisi melalui JavaScript -->
+                                            </select>
+                                        </div>
+                                    </div>                                  
+                                    <div class="col-md-12">
+                                        <button type="submit" class="btn btn-primary">Search Candidate</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Results Candidate</h3>
+                        </div>
+                        <div class="card-body">
+                            <table id="results-table" class="table table-bordered table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>SEAMAN CODE</th>
+                                        <th>SEAFARER CODE</th>
+                                        <th>SEAMAN NAME</th>
+                                        <th>RANK</th>
+                                        <th>VESSEL</th>
+                                        <th>UMUR</th>
+                                        <th>CERTIFICATE</th>
+                                        <th>DAY REMAINS</th>
+                                        <th>CALL</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Rows will be added here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Control Sidebar -->
+        <aside class="control-sidebar control-sidebar-dark">
+            <!-- Control sidebar content goes here -->
+        </aside>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.24/js/dataTables.bootstrap4.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.2.0/js/adminlte.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Load options for dropdowns
+            $.get('/options', function(data) {
+                //populateSelect('#bagian-input', data.bagian_option);
+                populateSelect('#certif-input', data.cert_option);
+                populateSelect('#rank-input', data.rank_option);
+            });
+        
+            // Initialize DataTable
+            var table = $('#results-table').DataTable({
+                ordering: false,
+                dom: 'tp',
+                pageLength: 5
+            });
+        
+            // Form submission
+            $('#search-form').submit(function(e) {
+                e.preventDefault();
+        
+                // Set the selected sheet name
+                var selectedSheetName = 'MT';  // You can change this value as needed
+        
+                // Prepare formData
+                var formData = {
+                    SHEET_NAME: selectedSheetName,  // Add sheet_name to formData
+                    BAGIAN: $('#bagian-input').val(),
+                    VESSEL: $('#vessel-input').val(),
+                    LB: parseInt($('#age-input').val()),
+                    UB: parseInt($('#age-input2').val()),
+                    CERTIFICATE: $('#certif-input').val(),
+                    RANK: $('#rank-input').val(),
+                    UMUR: Math.round((parseInt($('#age-input').val()) + parseInt($('#age-input2').val())) / 2)
+                };
+        
+                $.ajax({
+                    url: '/get-manual-search',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(formData),
+                    success: function(response) {
+                        table.clear();
+                
+                        if (response.length === 0) {
+                            alert('No candidates found matching the criteria.');
+                        } else {
+                            response.forEach(function(item, index) {
+                                // Tambahkan baris utama ke dalam tabel (SEAMAN CODE, SEAFARER CODE, dll.)
+                                let mainRow = table.row.add([
+                                    item['SEAMAN CODE'],
+                                    item['SEAFARER CODE'],
+                                    item['SEAMAN NAME'],
+                                    item['RANK'],
+                                    item['VESSEL'],
+                                    item['UMUR'],
+                                    item['CERTIFICATE'],
+                                    item['DAY REMAINS'],
+                                    '<button class="phone-btn btn btn-link" data-index="' + index + '"><i class="fas fa-phone"></i></button>'  // Tombol dengan ikon telepon
+                                ]).node();
+                
+                                // Simpan detail telepon dalam atribut data pada baris
+                                $(mainRow).data('phoneDetails', {
+                                    phone1: item['PHONE1'],
+                                    phone2: item['PHONE2'],
+                                    phone3: item['PHONE3'],
+                                    phone4: item['PHONE4']
+                                });
+                            });
+                
+                            table.draw();  // Redraw tabel setelah menambahkan baris
+                
+                            // Event delegation untuk klik pada tombol telepon
+                            $('#results-table tbody').off('click', '.phone-btn').on('click', '.phone-btn', function() {
+                                let row = table.row($(this).closest('tr'));
+                                let phoneDetails = $(this).closest('tr').data('phoneDetails');
+                
+                                if (row.child.isShown()) {
+                                    row.child.hide();
+                                    $(this).closest('tr').removeClass('shown');
+                                } else {
+                                    // Tampilkan baris dengan detail nomor telepon
+                                    row.child(
+                                        '<div>' +
+                                        '<span class="phone-number" data-phone="' + phoneDetails.phone1 + '">No HP 1: ' + phoneDetails.phone1 + '</span><br>' +
+                                        '<span class="phone-number" data-phone="' + phoneDetails.phone2 + '">No HP 2: ' + phoneDetails.phone2 + '</span><br>' +
+                                        '<span class="phone-number" data-phone="' + phoneDetails.phone3 + '">No HP 3: ' + phoneDetails.phone3 + '</span><br>' +
+                                        '<span class="phone-number" data-phone="' + phoneDetails.phone4 + '">No HP 4: ' + phoneDetails.phone4 + '</span>' +
+                                        '</div>'
+                                    ).show();
+                                    $(this).closest('tr').addClass('shown');
+                                }
+                            });
+                
+                            // Event delegation untuk menyalin nomor telepon ketika diklik
+                            $('#results-table tbody').off('click', '.phone-number').on('click', '.phone-number', function() {
+                                let phone = $(this).data('phone');
+                                copyToClipboard(phone); // Panggil fungsi copyToClipboard
+                                alert('Nomor ' + phone + ' telah disalin ke clipboard!');
+                            });
+                        }
+                    },
+                    error: function(error) {
+                        console.error('Error:', error);
+                    }
+                });
+                
+                // Fungsi untuk menyalin teks ke clipboard
+                function copyToClipboard(text) {
+                    const tempInput = document.createElement('input');
+                    tempInput.style.position = 'absolute';
+                    tempInput.style.left = '-9999px';
+                    tempInput.value = text;
+                    document.body.appendChild(tempInput);
+                    tempInput.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(tempInput);
+                }                                                                                    
+            });
+        
+            // Function to populate any select element with options
+            function populateSelect(selector, options) {
+                var select = $(selector);
+                select.empty();  // Kosongkan dropdown terlebih dahulu
+                select.append($('<option></option>').attr('value', '').text('Select Option'));  // Tambahkan opsi default
+                $.each(options, function(i, option) {
+                    select.append($('<option></option>').attr('value', option).text(option));  // Tambahkan setiap opsi ke dalam dropdown
+                });
+            }
+
+            // Array to store vessels and other options (certificates, ranks)
+            var vessels = [];
+
+            // Fetch vessels data from the server
+            $.get('/vessels-options', function(data) {
+                vessels = data.vessels_option;  // Asumsikan endpoint ini mengembalikan daftar opsi vessel
+                populateSelect('#vessel-input', vessels);  // Panggil populateSelect untuk dropdown vessel
+            });
+
+            // Fetch other dropdown options (certificates, ranks) from the server
+            $.get('/options', function(data) {
+                populateSelect('#certif-input', data.cert_option);  // Isi dropdown Certificate
+                populateSelect('#rank-input', data.rank_option);  // Isi dropdown Rank
+            });
+
+            // Tidak perlu lagi menggunakan filterVessel karena kita sudah menggunakan dropdown biasa
+
+        });
+
+        // Function to mark the clicked sidebar as active
+        function markActiveSidebar(el) {
+            // Remove 'active' class from all nav-link elements
+            var links = document.querySelectorAll('.nav-link');
+            links.forEach(function(link) {
+                link.classList.remove('active');
+            });
+
+            // Add 'active' class to the clicked element
+            el.classList.add('active');
+        }
+
+        // Attach the function to all sidebar links
+        document.querySelectorAll('.nav-link').forEach(function(link) {
+            link.addEventListener('click', function() {
+                markActiveSidebar(this);
+            });
+        });
+        
+    </script>
+</body>
+</html>
